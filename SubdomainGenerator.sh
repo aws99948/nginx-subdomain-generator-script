@@ -49,13 +49,13 @@ cat > $WEB_DIR/$1/public_html/index.html <<EOF
 <!DOCTYPE html>
 <html lang="en">
 <head>
-        <title>You are in the subdomain $1.$2</title>
+        <title>You are in the domain $1.$2</title>
         <meta charset="utf-8" />
 </head>
 <body class="container">
-        <header><h1>You are in the subdomain $1.$2<h1></header>
+        <header><h1>You are in the domain $1.$2<h1></header>
         <div id="wrapper">
-                This is the body of your subdomain page.
+                This is the body of your domain page.
         </div>
         <br>
         <footer>© $(date +%Y)</footer>
@@ -70,10 +70,7 @@ chown -R $USER:$WEB_USER $WEB_DIR/$1
 ln -s $NGINX_AVAILABLE_VHOSTS/$1 $NGINX_ENABLED_VHOSTS/$1
 
 # Restart the Nginx server.
-read -p "A restart to Nginx is required for the subdomain to be defined. Do you wish to restart nginx? (y/n): " prompt
-if [[ $prompt == "y" || $prompt == "Y" || $prompt == "yes" || $prompt == "Yes" ]]
-then
-  /etc/init.d/nginx restart;
+service nginx restart ;
 fi
 
 ok "domain is created for $1."
