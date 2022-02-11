@@ -22,20 +22,21 @@ ok "Creating the config files for your subdomain."
 # Create the Nginx config file.
 cat > $NGINX_AVAILABLE_VHOSTS/$1 <<EOF
 server {
-    # Just the server name
-    server_name $1.$2;
-    root        $WEB_DIR/$1/public_html;
-
-    # Logs
-    access_log $WEB_DIR/$1/logs/access.log;
-    error_log  $WEB_DIR/$1/logs/error.log;
-
-    # Includes
-    # include global/common.conf;
-
-    # Listen to port 8080, cause of Varnis
-    # Must be defined after the common.conf include
-    #listen 127.0.0.1:8080;
+    listen 80;
+    server_name ram.com;
+    
+    location / {
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-NginX-Proxy true;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_max_temp_file_size 0;
+        proxy_pass http://api_server/;
+        proxy_redirect off;
+        proxy_read_timeout 240s;
+    }
 }
 EOF
 
@@ -47,13 +48,13 @@ cat > $WEB_DIR/$1/public_html/index.html <<EOF
 <!DOCTYPE html>
 <html lang="en">
 <head>
-        <title>You are in the subdomain $1.$2</title>
+        <title>You are in the domain $1.$2</title>
         <meta charset="utf-8" />
 </head>
 <body class="container">
-        <header><h1>You are in the subdomain $1.$2<h1></header>
+        <header><h1>You are in the domain $1.$2<h1></header>
         <div id="wrapper">
-                This is the body of your subdomain page.
+                This is the body of your domain page.
         </div>
         <br>
         <footer>© $(date +%Y)</footer>
@@ -74,4 +75,4 @@ then
   /etc/init.d/nginx restart;
 fi
 
-ok "Subdomain is created for $1."
+ok "domain is created for $1."
