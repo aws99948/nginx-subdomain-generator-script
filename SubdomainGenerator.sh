@@ -9,21 +9,17 @@ die() { echo -e '\e[1;31m'$1'\e[m'; exit 1; }
 # Variable definitions.
 NGINX_AVAILABLE_VHOSTS='/etc/nginx/sites-available'
 NGINX_ENABLED_VHOSTS='/etc/nginx/sites-enabled'
-WEB_DIR='/var/www'
-NGINX_SCHEME='$scheme'
-NGINX_REQUEST_URI='$request_uri'
-
 # Sanity check.
 [ $(id -g) != "0" ] && die "Script must be running as root."
-[ $# != "2" ] && die "Usage: $(basename $0) DomainName"
+[ $# != "1" ] && die "Usage: $(basename $0) DomainName"
 
 ok "Creating the config files for your domain."
 
 # Create the Nginx config file.
-cat > $NGINX_AVAILABLE_VHOSTS/$1 <<EOF
+cat > $NGINX_AVAILABLE_VHOSTS/$1.conf <<EOF
 server {
     listen 80;
-    server_name ram.com;
+    server_name $1;
     
     location / {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -40,37 +36,9 @@ server {
 }
 
 EOF
-
-# Create {public,log} directories.
-mkdir -p $WEB_DIR/$1/{public_html,logs}
-
-# Create index.html file.
-cat > $WEB_DIR/$1/public_html/index.html <<EOF
-<!DOCTYPE html>
-<html lang="en">
-<head>
-        <title>You are in the domain $1.$2</title>
-        <meta charset="utf-8" />
-</head>
-<body class="container">
-        <header><h1>You are in the domain $1.$2<h1></header>
-        <div id="wrapper">
-                This is the body of your domain page.
-        </div>
-        <br>
-        <footer>© $(date +%Y)</footer>
-</body>
-</html>
-EOF
-
-# Change the folder permissions.
-chown -R $USER:$WEB_USER $WEB_DIR/$1
-
 # Enable site by creating symbolic link.
-ln -s $NGINX_AVAILABLE_VHOSTS/$1 $NGINX_ENABLED_VHOSTS/$1
+ln -s $NGINX_AVAILABLE_VHOSTS/$1.conf $NGINX_ENABLED_VHOSTS/$1.conf
 
 # Restart the Nginx server.
-service nginx restart ;
-fi
-
+service nginx reload ;
 ok "domain is created for $1."
