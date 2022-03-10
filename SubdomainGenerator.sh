@@ -11,7 +11,7 @@ NGINX_AVAILABLE_VHOSTS='/etc/nginx/sites-available'
 NGINX_ENABLED_VHOSTS='/etc/nginx/sites-enabled'
 # Sanity check.
 [ $(id -g) != "0" ] && die "Script must be running as root."
-[ $# != "1" ] && die "Usage: $(basename $0) DomainName"
+[ $# != "1" ] && die "Usage: $(basename $0) subDomainName mainDomainName"
 
 ok "Creating the config files for your domain."
 
@@ -41,4 +41,4 @@ ln -s $NGINX_AVAILABLE_VHOSTS/$1.conf $NGINX_ENABLED_VHOSTS/$1.conf
 
 # Restart the Nginx server.
 service nginx reload ;
-ok "domain is created for $1."
+ok "subdomain is created for $1."
